@@ -1,0 +1,7 @@
+[
+  {
+    "id": "gui.debugModal.title",
+    "description": "title for the debugging modal",
+    "defaultMessage": "Debugging | Getting Unstuck"
+  }
+]

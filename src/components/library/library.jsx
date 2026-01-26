@@ -87,9 +87,17 @@ class LibraryComponent extends React.Component {
         }
     }
     handleSelect (id) {
+        console.log('Library: handleSelect called with id:', id);
         this.handleClose();
-        this.props.onItemSelected(this.getFilteredData()
-            .find(item => this.constructKey(item) === id));
+        const item = this.getFilteredData()
+            .find(item => this.constructKey(item) === id);
+        console.log('Library: Found item:', item);
+        if (this.props.onItemSelected) {
+            console.log('Library: Calling onItemSelected');
+            this.props.onItemSelected(item);
+        } else {
+            console.error('Library: onItemSelected prop is not defined!');
+        }
     }
     handleClose () {
         this.props.onRequestClose();

@@ -10,6 +10,8 @@ import LibraryComponent from '../components/library/library.jsx';
 import soundIcon from '../components/library-item/lib-icon--sound.svg';
 import soundIconRtl from '../components/library-item/lib-icon--sound-rtl.svg';
 
+// Built-in sound library content - loaded directly from JSON file
+// Assets are served as static files by webpack from static/assets/sounds/ directory
 import soundLibraryContent from '../lib/libraries/sounds.json';
 import soundTags from '../lib/libraries/sound-tags';
 

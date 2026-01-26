@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Asset Loading</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .pass { background: #d4edda; }
+        .fail { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+    </style>
+</head>
+<body>
+    <h1>Asset Loading Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(testName, passed, message) {
+            const div = document.createElement('div');
+            div.className = `test ${passed ? 'pass' : 'fail'}`;
+            div.innerHTML = `<strong>${testName}:</strong> ${passed ? '✅ PASS' : '❌ FAIL'} - ${message}`;
+            results.appendChild(div);
+        }
+        
+        function addInfo(message) {
+            const div = document.createElement('div');
+            div.className = 'test info';
+            div.innerHTML = `<strong>INFO:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        // Test 1: Check if webpack dev server is running
+        addInfo('Testing asset loading configuration...');
+        
+        // Test 2: Test asset URL directly
+        const testAsset = '809d9b47347a6af2860e7a3a35bce057.svg';
+        const testUrl = `http://localhost:8601/static/assets/images/${testAsset}`;
+        
+        addInfo(`Testing URL: ${testUrl}`);
+        
+        fetch(testUrl)
+            .then(response => {
+                if (response.ok) {
+                    addResult('Asset URL Access', true, `Asset is accessible at ${testUrl}`);
+                    return response.blob();
+                } else {
+                    addResult('Asset URL Access', false, `HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            })
+            .then(blob => {
+                if (blob.type.includes('svg') || blob.type.includes('image')) {
+                    addResult('Asset Content Type', true, `Content type: ${blob.type}`);
+                } else {
+                    addResult('Asset Content Type', false, `Unexpected content type: ${blob.type}`);
+                }
+            })
+            .catch(error => {
+                addResult('Asset URL Access', false, `Error: ${error.message}`);
+            });
+        
+        // Test 3: Test storage configuration (if available)
+        if (typeof window !== 'undefined' && window.location.origin) {
+            const origin = window.location.origin;
+            const expectedUrl = `${origin}/static/assets/images/${testAsset}`;
+            addInfo(`Expected storage URL: ${expectedUrl}`);
+            
+            // Test if URL matches what storage.js would generate
+            const ext = testAsset.split('.').pop().toLowerCase();
+            const isSound = ['wav', 'mp3', 'ogg'].includes(ext);
+            const subDir = isSound ? 'sounds' : 'images';
+            const generatedUrl = `${origin}/static/assets/${subDir}/${testAsset}`;
+            
+            if (generatedUrl === expectedUrl) {
+                addResult('URL Generation Logic', true, 'URL generation matches expected format');
+            } else {
+                addResult('URL Generation Logic', false, `Generated: ${generatedUrl}, Expected: ${expectedUrl}`);
+            }
+        }
+        
+        // Test 4: Check if multiple assets exist
+        const testAssets = [
+            '809d9b47347a6af2860e7a3a35bce057.svg', // Abby
+            'bcf454acf82e4504149f7ffe07081dbc.svg', // Cat
+            'b3fc774e753fef520fb544127a48554b.svg'  // From error logs
+        ];
+        
+        addInfo('Testing multiple assets...');
+        let successCount = 0;
+        testAssets.forEach((asset, index) => {
+            const url = `http://localhost:8601/static/assets/images/${asset}`;
+            fetch(url)
+                .then(response => {
+                    if (response.ok) {
+                        successCount++;
+                        addResult(`Asset ${index + 1} (${asset})`, true, 'Accessible');
+                    } else {
+                        addResult(`Asset ${index + 1} (${asset})`, false, `HTTP ${response.status}`);
+                    }
+                })
+                .catch(error => {
+                    addResult(`Asset ${index + 1} (${asset})`, false, error.message);
+                });
+        });
+        
+        // Summary
+        setTimeout(() => {
+            addInfo(`Test Summary: ${successCount}/${testAssets.length} assets accessible`);
+        }, 2000);
+    </script>
+</body>
+</html>

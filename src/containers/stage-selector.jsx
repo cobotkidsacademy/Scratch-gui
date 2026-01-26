@@ -67,15 +67,52 @@ class StageSelector extends React.Component {
         }
     }
     addBackdropFromLibraryItem (item, shouldActivateTab = true) {
-        const vmBackdrop = {
-            name: item.name,
-            md5: item.md5ext,
-            rotationCenterX: item.rotationCenterX,
-            rotationCenterY: item.rotationCenterY,
-            bitmapResolution: item.bitmapResolution,
-            skinId: null
-        };
-        this.handleNewBackdrop(vmBackdrop, shouldActivateTab);
+        console.log('[GUI.DEBUG] StageSelector: Adding backdrop from library item:', item.name);
+        
+        // WORKAROUND: Pre-load backdrop asset to bypass hanging Storage.load()
+        const assetUrl = `/static/assets/images/${item.md5ext}`;
+        
+        fetch(assetUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to load backdrop: ${response.status}`);
+                }
+                return response.arrayBuffer();
+            })
+            .then(data => {
+                // Store asset in storage cache
+                const runtime = this.props.vm.runtime;
+                const storage = runtime.storage;
+                const AssetType = storage.AssetType;
+                const DataFormat = storage.DataFormat;
+                
+                const [md5, ext] = item.md5ext.split('.');
+                const assetType = ext === 'svg' ? AssetType.ImageVector : AssetType.ImageBitmap;
+                const dataFormat = DataFormat[ext.toUpperCase()] || DataFormat.SVG;
+                
+                // Create proper Asset object and store in multiple cache locations
+                const asset = storage.createAsset(assetType, ext, new Uint8Array(data), md5, false);
+                storage.builtinHelper._store(assetType, dataFormat, new Uint8Array(data), md5);
+                
+                // Also store in custom cache for reliable lookup
+                if (!storage._assetCache) storage._assetCache = {};
+                const cacheKey = `${assetType}_${md5}`;
+                storage._assetCache[cacheKey] = asset;
+                
+                const vmBackdrop = {
+                    name: item.name,
+                    md5: item.md5ext,
+                    rotationCenterX: item.rotationCenterX,
+                    rotationCenterY: item.rotationCenterY,
+                    bitmapResolution: item.bitmapResolution,
+                    skinId: null
+                };
+                
+                this.handleNewBackdrop(vmBackdrop, shouldActivateTab);
+            })
+            .catch(error => {
+                console.error('[GUI.DEBUG] Failed to load backdrop:', error);
+            });
     }
     handleClick () {
         this.props.onSelect(this.props.id);

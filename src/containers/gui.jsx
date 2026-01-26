@@ -57,7 +57,9 @@ const setProjectIdMetadata = projectId => {
 class GUI extends React.Component {
     componentDidMount () {
         setIsScratchDesktop(this.props.isScratchDesktop);
+        console.log('GUI: componentDidMount - Initializing storage...');
         this.props.onStorageInit(storage);
+        console.log('GUI: componentDidMount - Storage initialized, VM storage:', this.props.vm.runtime.storage);
         this.props.onVmInit(this.props.vm);
         setProjectIdMetadata(this.props.projectId);
     }

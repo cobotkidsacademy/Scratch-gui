@@ -109,18 +109,67 @@ const distConfig = baseConfig.clone()
 
 // build the examples and debugging tools in `build/`
 const buildConfig = baseConfig.clone()
-    .enableDevServer(process.env.PORT || 8601)
     .merge({
         entry: {
             gui: './src/playground/index.jsx',
             blocksonly: './src/playground/blocks-only.jsx',
             compatibilitytesting: './src/playground/compatibility-testing.jsx',
-            player: './src/playground/player.jsx'
+            player: './src/playground/player.jsx',
+            admin: './src/playground/admin.jsx'
         },
         output: {
             path: path.resolve(__dirname, 'build')
+        },
+        // Exclude static/assets from watching to prevent disconnections
+        // These files don't change during development, so no need to watch them
+        watchOptions: {
+            ignored: [
+                '**/node_modules/**',
+                '**/static/assets/**', // Exclude asset files (973 images + 355 sounds)
+                '**/build/**',
+                '**/dist/**'
+            ],
+            // Use polling on Windows for better reliability
+            poll: process.platform === 'win32' ? 2000 : false, // Increased to 2 seconds
+            aggregateTimeout: 1000 // Wait 1 second before rebuilding (increased from 300ms)
+        },
+        // Configure dev server to serve static files
+        // IMPORTANT: Configure devServer BEFORE enableDevServer to ensure our config is used
+        devServer: {
+            port: process.env.PORT || 8601,
+            host: '0.0.0.0', // Listen on all network interfaces (accessible from 192.168.x.x)
+            static: [
+                {
+                    directory: path.join(__dirname, 'static'),
+                    publicPath: '/static',
+                    watch: false // Don't watch static assets (prevents disconnections)
+                },
+                {
+                    directory: path.join(__dirname, 'build'),
+                    publicPath: '/',
+                    watch: false // Don't watch build directory either
+                }
+            ],
+            // Allow serving files from static directory
+            allowedHosts: 'all',
+            // Prevent disconnections by configuring client
+            client: {
+                overlay: {
+                    errors: true,
+                    warnings: false
+                },
+                reconnect: 5 // Try to reconnect 5 times
+            },
+            // Disable live reload to prevent disconnections
+            liveReload: false,
+            hot: true,
+            // Open browser automatically
+            open: false,
+            // Compress responses
+            compress: true
         }
     })
+    .enableDevServer(process.env.PORT || 8601)
     .addPlugin(new HtmlWebpackPlugin({
         ...commonHtmlWebpackPluginOptions,
         chunks: ['gui'],
@@ -148,6 +197,13 @@ const buildConfig = baseConfig.clone()
         template: 'src/playground/index.ejs',
         title: 'Scratch 3.0 GUI: Player Example'
     }))
+    .addPlugin(new HtmlWebpackPlugin({
+        ...commonHtmlWebpackPluginOptions,
+        chunks: ['admin'],
+        filename: 'admin.html',
+        template: 'src/playground/index.ejs',
+        title: 'Scratch Library Admin'
+    }))
     .addPlugin(new CopyWebpackPlugin({
         patterns: [
             {
@@ -158,6 +214,12 @@ const buildConfig = baseConfig.clone()
                 from: 'extensions/**',
                 to: 'static',
                 context: 'src/examples'
+            },
+            {
+                // Copy assets directory so static assets are served by webpack
+                from: 'static/assets',
+                to: 'static/assets',
+                noErrorOnMissing: true
             }
         ]
     }));

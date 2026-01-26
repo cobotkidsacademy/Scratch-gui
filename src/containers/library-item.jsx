@@ -33,8 +33,14 @@ class LibraryItem extends React.PureComponent {
         this.handleMouseLeave(id);
     }
     handleClick (e) {
+        console.log('LibraryItem: handleClick called, disabled:', this.props.disabled, 'id:', this.props.id);
         if (!this.props.disabled) {
-            this.props.onSelect(this.props.id);
+            console.log('LibraryItem: Calling onSelect with id:', this.props.id);
+            if (this.props.onSelect) {
+                this.props.onSelect(this.props.id);
+            } else {
+                console.error('LibraryItem: onSelect prop is not defined!');
+            }
         }
         e.preventDefault();
     }
@@ -105,9 +111,16 @@ class LibraryItem extends React.PureComponent {
     }
     render () {
         const iconMd5 = this.curIconMd5();
-        const iconURL = iconMd5 ?
-            `https://cdn.assets.scratch.mit.edu/internalapi/asset/${iconMd5}/get/` :
-            this.props.iconRawURL;
+        // Use webpack dev server for thumbnails (same origin, no external server)
+        // Format: /static/assets/images/{md5ext} or /static/assets/sounds/{md5ext}
+        let iconURL = this.props.iconRawURL;
+        if (iconMd5) {
+            const ext = iconMd5.split('.').pop().toLowerCase();
+            const isSound = ['wav', 'mp3', 'ogg'].includes(ext);
+            const subDir = isSound ? 'sounds' : 'images';
+            // Use relative path - webpack dev server serves from /static/
+            iconURL = `/static/assets/${subDir}/${iconMd5}`;
+        }
         return (
             <LibraryItemComponent
                 bluetoothRequired={this.props.bluetoothRequired}
@@ -157,7 +170,7 @@ LibraryItem.propTypes = {
             md5ext: PropTypes.string // 3.0 library format
         })
     ),
-    id: PropTypes.number.isRequired,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     insetIconURL: PropTypes.string,
     internetConnectionRequired: PropTypes.bool,
     isPlaying: PropTypes.bool,
