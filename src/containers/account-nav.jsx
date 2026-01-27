@@ -8,19 +8,50 @@ import {injectIntl} from 'react-intl';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
+import queryString from 'query-string';
 
 import AccountNavComponent from '../components/menu-bar/account-nav.jsx';
 
-const AccountNav = function (props) {
-    const {
-        ...componentProps
-    } = props;
-    return (
-        <AccountNavComponent
-            {...componentProps}
-        />
-    );
-};
+class AccountNav extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            studentName: null,
+            loading: false
+        };
+    }
+
+    componentDidMount() {
+        // Check for studentName or studentId in URL params
+        const queryParams = queryString.parse(window.location.search);
+        const studentName = queryParams.studentName;
+        const studentId = queryParams.studentId;
+        
+        if (studentName && !this.props.username) {
+            // Use studentName directly from URL params
+            this.setState({ studentName: decodeURIComponent(studentName) });
+        } else if (studentId && !this.props.username) {
+            // Fallback: use studentId if studentName not provided
+            this.setState({ studentName: `Student ${studentId.substring(0, 8)}` });
+        }
+    }
+
+    render() {
+        const {
+            ...componentProps
+        } = this.props;
+        
+        // Use student name if available, otherwise use username from session
+        const displayName = this.state.studentName || componentProps.username || '';
+        
+        return (
+            <AccountNavComponent
+                {...componentProps}
+                username={displayName}
+            />
+        );
+    }
+}
 
 AccountNav.propTypes = {
     classroomId: PropTypes.string,

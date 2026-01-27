@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
 import {defineMessages, injectIntl, intlShape} from 'react-intl';
+import queryString from 'query-string';
 
 import {
     getIsAnyCreatingNewState,
@@ -23,10 +24,37 @@ const messages = defineMessages({
  */
 const TitledHOC = function (WrappedComponent) {
     class TitledComponent extends React.Component {
-        componentDidMount () {
-            this.handleReceivedProjectTitle(this.props.projectTitle);
+        constructor(props) {
+            super(props);
+            this.state = {
+                courseTopicTitle: null,
+                loadingCourseTopic: false
+            };
         }
+
+        componentDidMount () {
+            // Check for courseName and topicName in URL params (passed directly from frontend)
+            const queryParams = queryString.parse(window.location.search);
+            const courseName = queryParams.courseName;
+            const topicName = queryParams.topicName;
+            
+            if (courseName && topicName) {
+                // Use course and topic names directly from URL params
+                const courseTopicTitle = `${decodeURIComponent(courseName)} > ${decodeURIComponent(topicName)}`;
+                this.setState({ courseTopicTitle });
+                this.props.onChangedProjectTitle(courseTopicTitle);
+            } else {
+                // Use default handling if names not provided
+                this.handleReceivedProjectTitle(this.props.projectTitle);
+            }
+        }
+
         componentDidUpdate (prevProps) {
+            // If we have courseTopicTitle from URL params, don't override it
+            if (this.state.courseTopicTitle) {
+                return;
+            }
+            
             if (this.props.projectTitle !== prevProps.projectTitle) {
                 this.handleReceivedProjectTitle(this.props.projectTitle);
             }
