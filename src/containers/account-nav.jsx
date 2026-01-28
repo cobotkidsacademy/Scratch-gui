@@ -23,14 +23,15 @@ class AccountNav extends React.Component {
 
     componentDidMount() {
         // Check for studentName or studentId in URL params
+        // Priority: studentName from URL > session username
         const queryParams = queryString.parse(window.location.search);
         const studentName = queryParams.studentName;
         const studentId = queryParams.studentId;
         
-        if (studentName && !this.props.username) {
-            // Use studentName directly from URL params
+        if (studentName) {
+            // Always use studentName from URL params if available (highest priority)
             this.setState({ studentName: decodeURIComponent(studentName) });
-        } else if (studentId && !this.props.username) {
+        } else if (studentId) {
             // Fallback: use studentId if studentName not provided
             this.setState({ studentName: `Student ${studentId.substring(0, 8)}` });
         }

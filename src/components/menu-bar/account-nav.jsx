@@ -46,9 +46,11 @@ const AccountNavComponent = ({
                     imageUrl={thumbnailUrl}
                 />
             ) : null}
-            <span className={styles.profileName}>
-                {username}
-            </span>
+            {username ? (
+                <span className={styles.profileName}>
+                    {username}
+                </span>
+            ) : null}
             <div className={styles.dropdownCaretPosition}>
                 <img
                     className={styles.dropdownCaretIcon}
