@@ -1,4 +1,7 @@
 node_modules/
-src/
 tests/
-scripts/
+.vercel/
+.git/
+.gitignore
+npm-debug.log*
+yarn-error.log*
