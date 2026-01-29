@@ -3,7 +3,7 @@ node_modules/
 
 # Tests are not needed for production deploy
 tests/
-
+build/
 # Vercel / git noise
 .vercel/
 .git/
