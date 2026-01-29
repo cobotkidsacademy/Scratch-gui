@@ -11,23 +11,23 @@
   },
   "main": "./dist/scratch-gui.js",
   "scripts": {
-    "build": "npm run clean && webpack",
-    "clean": "rimraf ./build ./dist",
-    "deploy": "touch build/.nojekyll && gh-pages -t -d build -m \"[skip ci] Build for $(git log --pretty=format:%H -n1)\"",
-    "prepublish": "node scripts/prepublish.mjs",
-    "prune": "./prune-gh-pages.sh",
-    "i18n:push": "tx-push-src scratch-editor interface translations/en.json",
-    "i18n:src": "rimraf ./translations/messages/src && babel src > tmp.js && rimraf tmp.js && build-i18n-src ./translations/messages/src ./translations/",
-    "start": "webpack serve",
-    "download-assets": "node scripts/download-assets.js",
-    "serve-assets": "node scripts/serve-assets.js",
-    "test": "npm run test:lint && npm run test:unit && npm run build && npm run test:integration",
-    "test:integration": "jest --maxWorkers=4 test[\\\\/]integration",
-    "test:lint": "eslint . --ext .js,.jsx",
-    "test:unit": "jest test[\\\\/]unit",
-    "test:smoke": "jest --runInBand test[\\\\/]smoke",
-    "watch": "webpack --watch"
-  },
+  "build": "npm run clean && webpack",
+  "clean": "rimraf ./build ./dist",
+  "deploy": "touch build/.nojekyll && gh-pages -t -d build -m \"[skip ci] Build for $(git log --pretty=format:%H -n1)\"",
+  "prune": "./prune-gh-pages.sh",
+  "i18n:push": "tx-push-src scratch-editor interface translations/en.json",
+  "i18n:src": "rimraf ./translations/messages/src && babel src > tmp.js && rimraf tmp.js && build-i18n-src ./translations/messages/src ./translations/",
+  "start": "webpack serve",
+  "download-assets": "node scripts/download-assets.js",
+  "serve-assets": "node scripts/serve-assets.js",
+  "test": "npm run test:lint && npm run test:unit && npm run build && npm run test:integration",
+  "test:integration": "jest --maxWorkers=4 test[\\\\/]integration",
+  "test:lint": "eslint . --ext .js,.jsx",
+  "test:unit": "jest test[\\\\/]unit",
+  "test:smoke": "jest --runInBand test[\\\\/]smoke",
+  "watch": "webpack --watch"
+},
+
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"
