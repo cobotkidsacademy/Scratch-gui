@@ -1,7 +1,14 @@
+# Dependencies (Vercel installs these)
 node_modules/
+
+# Tests are not needed for production deploy
 tests/
+
+# Vercel / git noise
 .vercel/
 .git/
 .gitignore
+
+# Logs
 npm-debug.log*
 yarn-error.log*
