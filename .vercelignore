@@ -3,6 +3,7 @@ node_modules/
 
 # Tests are not needed for production deploy
 tests/
+build/
 
 # Vercel / git noise
 .vercel/
@@ -12,3 +13,4 @@ tests/
 # Logs
 npm-debug.log*
 yarn-error.log*
+
